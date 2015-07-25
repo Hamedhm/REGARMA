@@ -1,0 +1,10 @@
+**********************************************
+*** Changes for R-package parcor           ***
+*** Nicole Kraemer <nicole.kraemer@tum.de> ***
+**********************************************
+
+--- Version 0.2-4 (August 20, 2013) ---
+
+- The function adalasso is now compatible with the latest version of the glmnet package.
+
+

@@ -1,0 +1,17 @@
+Package: REGARMA
+Type: Package
+Title: Regularized estimation of Lasso, adaptive lasso, elastic net and REGARMA
+Version: 0.1.1.2
+Date: 2014-10-01
+Depends: tseries, msgps, Rmpfr  
+Imports: tseries, msgps, Rmpfr
+Author: Hamed Haselimashhadi (www.hamedhaseli.webs.com)
+Maintainer:  Hamed Haseli <hamed.haselimashhadi@brunel.ac.uk>, <hamedhaseli@gmail.com>
+Description: This package estimates Lasso, adaptive Lasso, elastic net and REGARMA regression using AIC, BIC and GCV. 
+License: GPL (>= 2)
+LazyLoad: no
+Packaged: 2014-01-15 11:21:29 UTC; ga29xul
+Repository: CRAN
+Date/Publication: 2014-10-01 11:21:29
+NeedsCompilation: yes
+Depends: R(>= 2.10.0)
