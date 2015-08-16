@@ -20,7 +20,11 @@ countTonumber<-function(x){
   }
 }
 
-`regarma` <- function ( x, y, ar = 0, ma = 0, method = c ( 'enet', 'alasso' ), mselection = c ( 'CP', 'AIC', 'GCV', 'BIC' ), alpha = 0, normalize = FALSE, auto.order = FALSE, auto.prune = TRUE, rep = 15, stop.criteria = 10^ -6, zero.find.force=FALSE, debug = FALSE ) { 
+`regarma` <- function ( x, y, ar = 0, ma = 0, method = c ( 'enet', 'alasso' ), 
+                        mselection = c ( 'CP', 'AIC', 'GCV', 'BIC' ), alpha = 0, 
+                        normalize = FALSE, auto.order = FALSE, auto.prune = TRUE, 
+                        rep = 15, stop.criteria = 10^ -6, zero.find.force=FALSE, 
+                        debug = FALSE ) { 
   mpreg = FALSE  
   if ( debug  ==  TRUE ) { Rprof ( tf <- "lregarma.log", memory.profiling = TRUE ) }  
   pb2 <- txtProgressBar ( min  =  1, max  =  3, style  =  3 )
@@ -49,7 +53,7 @@ countTonumber<-function(x){
       ar = 0; ar.values = 0
     } 
   } 
-  ini.ar = ar; ini.ma = ma
+  ini.ar = ar; ini.ma = ma; ini.moving.error = c()
   #This is pruning loop and it is controled by the end of secuence
   coef.matrix=matrix(c(1, 1, countTonumber(ini.ar),  countTonumber(ini.ma), countTonumber(r) ) ,ncol=1)
   for ( prune.iter in 1: ( ar+ma+1 ) ) { 
@@ -61,7 +65,8 @@ countTonumber<-function(x){
     #--------- REGARMA STEP 1 ----------
     setTxtProgressBar ( pb2, 1 )
     if ( ar > 0 ) { 
-      Hp = makematrix ( y, ar, MASS::huber ( as.vector ( y ) )$mu, 'Hp' )
+      #Hp = makematrix ( y, ar, MASS::huber ( as.vector ( y ) )$mu, 'Hp' )
+      Hp = makematrix ( y, ar, 0 , 'Hp' )
       if ( mpreg  ==  FALSE ) { 
         s1.regar = msgps::msgps ( cbind ( Hp [ -s1.ar.seq, ], x [ -s1.ar.seq, ]), as.vector ( y [ -s1.ar.seq ] ), penalty = method, intercept = FALSE, alpha = alpha, STEP.max  =  10^6 )
         s1.y.hat = cbind ( Hp [ -s1.ar.seq, ], x [ -s1.ar.seq, ]) %*% s1.regar [[ selection ]]$coef #+s1.regar$intercept
@@ -117,7 +122,8 @@ countTonumber<-function(x){
     for ( j in 1:rep ) { 
       if ( ma > 0 ) { 
         if ( ar > 0 ) { 
-          Hq = makematrix ( s1.error, ma, MASS::huber ( as.vector ( s1.error ) )$mu, 'Hq' )
+          #Hq = makematrix ( s1.error, ma, MASS::huber ( as.vector ( s1.error ) )$mu, 'Hq' )
+          Hq = makematrix ( s1.error, ma, 0 , 'Hq' )
           s2.regarma.model = msgps::msgps ( cbind ( Hp [ -ar.ma.seq, ], Hq [ -ma.seq, ], x [ -ar.ma.seq, ]), as.vector ( y [ -ar.ma.seq ] ), penalty = method, intercept = FALSE, alpha = alpha, STEP.max  =  10^6 )
           s2.regarma.coeffs = s2.regarma.model [[ selection ]]$coef  
           s2.regarma.y.hat =  cbind ( Hp [ -ar.ma.seq, ], Hq [ -ma.seq, ], x [ -ar.ma.seq, ]) %*% s2.regarma.coeffs #+s2.regarma.model$intercept
@@ -125,7 +131,8 @@ countTonumber<-function(x){
           HREGARMA  =  cbind ( Hp [ -ar.ma.seq, ], Hq [ -ma.seq, ], x [ -ar.ma.seq, ])
           #       plot ( s2.regarma.model$dfbic_result$result, type = 'l' )
         }else{ 
-          Hq = makematrix ( s1.error, ma, MASS::huber ( as.vector ( s1.error ) )$mu, 'Hq' )
+          #Hq = makematrix ( s1.error, ma, MASS::huber ( as.vector ( s1.error ) )$mu, 'Hq' )
+          Hq = makematrix ( s1.error, ma, 0 , 'Hq' )
           s2.regarma.model = msgps::msgps ( cbind ( Hq [ -ma.seq, ], x [ -ar.ma.seq, ]), as.vector ( y [ -ar.ma.seq ] ), penalty = method, intercept = FALSE, alpha = alpha, STEP.max  =  10^6 )
           s2.regarma.coeffs = s2.regarma.model [[ selection ]]$coef  
           s2.regarma.y.hat =  cbind ( Hq [ -ma.seq, ], x [ -ar.ma.seq, ]) %*% s2.regarma.coeffs #+s2.regarma.model$intercept
@@ -261,14 +268,24 @@ countTonumber<-function(x){
         setTxtProgressBar ( pb3, j ); 
         if(ncol(coef.matrix) > 2){
           stop.criteria.value = sum(abs( abs( new.coefs[-c(1,2)] ) - abs(coef.matrix[ -c(1,2), ncol(coef.matrix) - 1 ] ) )^2)
-          cat('\r Stop criteria : ',stop.criteria.value,'')
-          #print(new.coefs[-c(1,2)])
-          #print(coef.matrix[ -c(1,2), ncol(coef.matrix) - 1 ])
+          ini.moving.error[j-1] = stop.criteria.value
+          mov.c = mean ( x = ini.moving.error ) 
+          cat('\r Stop criteria : ',stop.criteria.value,'(',round(mov.c,6),')',sep = '')
           if (stop.criteria.value < stop.criteria) {
             setTxtProgressBar ( pb3, rep+1 )
             cat('\n Stop criteria (',stop.criteria,') reached in ',j,' iterations with squared error = ', stop.criteria.value ,'')
             break
           }
+          
+          #----SEcond stop Critera
+          if(j>5){
+            if( abs (tail(ini.moving.error,1) -  mean( x = tail(ini.moving.error[-(j-1)] ,sqrt(j)) ) )  < stop.criteria ){ 
+              setTxtProgressBar ( pb3, rep+1 )
+              cat(' \n No more precision is reached in ',j,' iterations! \n')
+              break
+            }
+          }
+          
         }
       }else{ 
         
@@ -286,6 +303,7 @@ countTonumber<-function(x){
         cat  ( '\n Pruning in progress... , AR: ', ar, '-to->', ar.temp, ' , MA: ', ma, '-to->', ma.temp , '\n' )
         ar = ar.temp
         ma = ma.temp
+        ini.moving.error=c()
       }else{ 
         break
       } 
@@ -304,7 +322,8 @@ countTonumber<-function(x){
            #--------- Data ---------#
            y = temY, x = temX, 
            nAR = ini.ar, nMA = ini.ma, 
-           AR.Value = fillWithZero ( ar.values, ini.ar ), MA.Value = fillWithZero ( ma.values, ini.ma ), 
+           AR.Value = fillWithZero ( ar.values, ini.ar ), 
+           MA.Value = fillWithZero ( ma.values, ini.ma ), 
            #--------- Model ---------#
            Selection.method = mselection, 
            Penalty.type = method, 

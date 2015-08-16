@@ -11,10 +11,11 @@
     This function estimates the parameters of a REGARMA model using lasso and adaptive lasso penalties for a given dataset with or without replications. It also selects the optimal model using AIC, BIC and GCV.
 }
 \usage{
-  regARMA(data, ar = 0, ma = 0, method = c("alasso"), mselection = "BIC", 
-  alpha = 0, Ndf = 0, Sdf = 0, normalize = FALSE, auto.order = FALSE, 
-  with.rep = NA, non.penalized = FALSE, iteration=10, auto.prune = TRUE, 
-  debug = FALSE)
+  regARMA  ( data,  ar = 0,  ma = 0,  method = c  ( "alasso" ) ,  
+                       mselection  =  "BIC",  alpha = 0,  Ndf = 0,  Sdf = 0,  
+                       ses.l = 1 , normalize = FALSE, with.rep = NA,  
+                       non.penalized = FALSE,  iteration = 25, 
+                       auto.prune = TRUE, zero.find.force=FALSE , debug = FALSE ) 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,19 +27,19 @@
   }
   \item{ar}{
     %%     ~~Describe \code{ar} here~~
-      AR order of model
+      AR order of the model
   }
   \item{ma}{
     %%     ~~Describe \code{ma} here~~
-      MA order of model 
+      MA order of the model 
   }
   \item{method}{
     %%     ~~Describe \code{method} here~~
-      Type of penalties. Choose between elastic net (enet) and adaptive lasso (alasso). Note that lasso can be computed by choosing enet for method and setting alpha equals to zero.
+      Type of penalty. Choosing between elastic net (enet) and adaptive lasso (alasso).\cr Note that lasso can be computed by choosing enet for method and setting alpha equals to zero.
   }
   \item{mselection}{
     %%     ~~Describe \code{mselection} here~~
-      Model selection criteria. Choose between AIC, BIC and GCV for the selection of the tuning parameters. %%(See also msgps function in msgps package for more details) 
+      Model selection criteria. Choosing between CP, AIC, BIC and GCV for the selection of the tuning parameters. %%(See also msgps function in msgps package for more details) 
   }
   \item{alpha}{
     %%     ~~Describe \code{alpha} here~~
@@ -52,34 +53,38 @@
     %%     ~~Describe \code{Sdf} here~~
       Degree of seasonal differencing if necessary
   }
+  \item{ses.l}{
+     Seasonal lag (>0)
+  
+  }
   \item{normalize}{
     %%     ~~Describe \code{normalize} here~~
-      Set to TRUE in order to normalize the data to mean zero and unit variance 
-  }
-  \item{auto.order}{
-    %%     ~~Describe \code{auto.order} here~~
-      If TRUE, the optimal orders of the model are chosen according to AIC (if mselection="AIC") or BIC (if mselection="BIC" or "GCV"). %( See also auto.arima function in forecast package for more detail)
+      Set to true in order to normalize the data to mean zero and unit variance before starting algorithm
   }
   \item{with.rep}{
     %%     ~~Describe \code{auto.order} here~~
-      If set to 1 then model with replications is applied. If set to 0 then model without replication is applies. If set to NA then function decides about the model. %( See also auto.arima function in forecast package for more detail)
+      If set to true then model with replications is applied. If set to false then model without replication is applies. If set to NA then function decides about the model. %( See also auto.arima function in forecast package for more detail)
   }
   \item{non.penalized}{
     %%     ~~Describe \code{debug} here~~
-      If set TRUE then non-penalized model is applied. \cr
-    Notice: in this case method, mselection, alpha and with.rep are not working.
+      If set to true then non-penalized model is applied. \cr
+    Notice: in this case method, mselection, alpha, with.rep and corresponding outputs are not working.
     
   }
   \item{iteration}{
     The number of iterations in estimating parameters\cr
-    Note: setting to a high number might cause a very long running time.
+    Note: setting to a large number might cause a very long running time.
   }
   \item{auto.prune}{
-   If set to TRUE, then function prune the orders to get the minimum orders. Recommended to set an initial order of 5 and 5 for AR and MA respectively.
+   If set to true, then function prunes the orders to get the minimal orders. Recommended to set an initial order of 5 and 5 for AR and MA respectively.
+  }
+  \item{zero.find.force}{
+  If set to true, then any zero is counted in purning procedure. For instance, if estimation of coefficients are 0.5, 0, .3 then model reduced to an order 2 for the next step. If set to false (default) then the algorithm does not continue purning even if there are many zeros in between the first and the last estmation. Then in our example model stays in order 3.
+  
   }
   \item{debug}{
     %%     ~~Describe \code{debug} here~~
-      To see a detailed report of process set this parameter to TRUE.
+      To see a detailed report of process set this parameter to true.
   }
 }
 \details{ More details about the parameter estimation approach are given in Haselimashhadi and Vinciotti (2014).
@@ -115,11 +120,11 @@
   # --------------- FIRST EXAMPLE: regARMA without replications ----------------#  
   # True regression coefficients
   beta=c(1:6,rep(0,200))
-  # Simulating data (100 time points) 
-  simdata=sim.regARMA(n=100,beta=beta,phi=generateAR(2,min.distance = .3),theta=generateAR(1),
+  # Simulating data (1500 time points) 
+  simdata=sim.regARMA(n=1500,beta=beta,phi=generateAR(2,min.distance = .3),theta=generateAR(1),
                       x.independent=TRUE,var.error=.1)
   #Fitting a REGARMA(2,1) model 
-  regarma.fit=regARMA(data = simdata$rawdata,ar = 2,ma = 1,method = 'alasso', mselection = 'BIC')
+  regarma.fit=regARMA(data = simdata$rawdata,ar = 4,ma = 4,method = 'alasso', mselection = 'BIC')
   #Printing true and estimated coefficients
   cat('coefficients:',beta[1:6],',0,..., ',0)
   

@@ -1,4 +1,4 @@
-`preProssData`<-function(y,x,dif=FALSE,remove.outliers=TRUE,remove.na=TRUE,dfn=1,dfs=0,ses.l=1,plots=TRUE,outlierCoef=1.5,kpss.Test=TRUE) {
+`preProssData`<-function(y,x,dif=FALSE,remove.outliers=TRUE,remove.na=TRUE,dfn=1,dfs=0,ses.l=1,plots=TRUE,outlierCoef=1.5,kpss.Test=TRUE,...) {
   org.y=y
   org.x=x
   if(!require('tseries')) stop('It needs tseries package to do KPSS.test',call. = 0)
@@ -59,8 +59,8 @@
   }
   if (plots==TRUE){
     par(mfrow=c(2,1))
-    plot(org.y,type='b',ylab='y before transformations')
-    plot(totalm[,1],type='b',ylab='y after transformations')
+    plot(org.y     ,ylab='y before transformations',...)
+    plot(totalm[,1],ylab='y after transformations' ,...)
     par(mfrow=c(1,1))
   }
   
@@ -119,6 +119,7 @@ HuberScale<-function(x){
 }
 
 OOacf<-function(y,main='ACF',R=1, ...){
+  y=as.vector(y)
   a=acf(y,plot=FALSE,...)$acf[-1]
   ci=qnorm(.975)/sqrt(length(y/R))
   aMax=max(abs(a))
@@ -132,6 +133,7 @@ OOacf<-function(y,main='ACF',R=1, ...){
 }
 
 OOpacf<-function(y,main='ACF',R=1,...){
+  y=as.vector(y)
   a=pacf(y,plot=FALSE,...)$acf
   ci=qnorm(.975)/sqrt(length(y/R))
   #print(R)
@@ -207,14 +209,14 @@ RRC<-function(x,nr=0,nc=0,first=TRUE){
   return(x)  
 }
 
-Nprint<-function(x,display=FALSE){
+Nprint<-function(x,display=FALSE, ...){
   if (display==TRUE){
-    print(x)
+    print(x,...)
   }
 }
-Ncat<-function(x,display=FALSE){
+Ncat<-function(x,display=FALSE,...){
   if (display==TRUE){
-    cat(x)
+    cat(x,...)
   }
 }
 
@@ -296,7 +298,8 @@ rdunif<-function(n=1,a=0,b=1){
 }
 
 
-# ERF function
+
+
 erf<-function(x,s=1){
   r=(2*pnorm(x/s,0,1/sqrt(2))-1)
   return(r)
@@ -365,7 +368,7 @@ erfa3<-function(x=1,s=1){
       }
       progress=progress+1
     }
-    H[is.na(H)]=beforestart.mean
+    H[is.na(H)]= beforestart.mean
     colnames(H)=paste(rname,1:p,sep='.')
     return(H)
   }else{

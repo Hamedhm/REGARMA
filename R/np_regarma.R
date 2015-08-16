@@ -90,7 +90,8 @@
   for ( j in 1:rep ) {    
     if ( ma>0 ) {
       if ( ar>0 ) {
-        Hq = makematrix ( s1.error, ma, MASS::huber ( as.vector ( s1.error )  )$mu*0, 'Hq' ) 
+        #Hq = makematrix ( s1.error, ma, MASS::huber ( as.vector ( s1.error )  )$mu*0, 'Hq' ) 
+        Hq = makematrix ( s1.error, ma, 0, 'Hq' ) 
         s2.regarma = lm ( as.vector ( y [ -narPma ]  ) ~cbind ( Hp [ -narPma,  ] , Hq [ -s2.ma.seq,  ] , x [ -narPma,  ]  )  + 0 ) 
         s2.regarma.coeffs = s2.regarma$coefficients  
         s2.y.hat = cbind ( Hp [ -narPma,  ] , Hq [ -s2.ma.seq,  ] , x [ -narPma,  ]  )  %*% s2.regarma.coeffs # + s2.regarma$intercept
@@ -98,7 +99,8 @@
         HREGARMA = cbind ( Hp [ -narPma,  ] , Hq [ -s2.ma.seq,  ] , x [ -narPma,  ]  ) 
         #       plot ( s2.regarma$dfbic_result$result, type = 'l' ) 
       }else{
-        Hq = makematrix ( s1.error, ma, MASS::huber ( as.vector ( s1.error )  )$mu*0, 'Hq' ) 
+        #Hq = makematrix ( s1.error, ma, MASS::huber ( as.vector ( s1.error )  )$mu*0, 'Hq' ) 
+        Hq = makematrix ( s1.error, ma, 0 , 'Hq' ) 
         s2.regarma = lm ( as.vector ( y [ -narPma ]  ) ~cbind ( Hq [ -s2.ma.seq,  ] , x [ -narPma,  ]  )  + 0 ) 
         s2.regarma.coeffs = s2.regarma$coefficients 
         s2.y.hat = cbind ( Hq [ -s2.ma.seq,  ] , x [ -narPma,  ]  )  %*% s2.regarma.coeffs # + s2.regarma$intercept

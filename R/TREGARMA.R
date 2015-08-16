@@ -12,13 +12,17 @@ findlastZero <- function  ( x ,force = FALSE) {
   } 
   return  ( out.p ) 
 } 
-regARMA <- function  ( data,  ar = 0,  ma = 0,  method = c  ( "alasso" ) ,  mselection  =  "BIC",  alpha = 0,  Ndf = 0,  Sdf = 0,  ses.l = 1 , normalize = FALSE,  auto.order  =  FALSE,  with.rep = NA,  non.penalized = FALSE,  iteration = 10, auto.prune = TRUE, zero.find.force=TRUE , debug = FALSE ) { 
+regARMA <- function  ( data,  ar = 0,  ma = 0,  method = c  ( "alasso" ) ,  
+                       mselection  =  "BIC",  alpha = 0,  Ndf = 0,  Sdf = 0,  
+                       ses.l = 1 , normalize = FALSE,  
+                       with.rep = NA,  non.penalized = FALSE,  iteration = 1, 
+                       auto.prune = TRUE, zero.find.force=FALSE , debug = FALSE ) { 
+  auto.order  =  FALSE
   BLACKLIST.ID  =  c() 
   if  ( is.matrix  ( data ) == FALSE ) { stop  ( 'Input data must be a matrix!' ) } 
   
   if  ( non.penalized == FALSE ) { 
     repTable = table  ( data [ , 1] ) 
-    
     MinReplication = min  ( repTable ) 
     MaxReplication = max  ( repTable ) 
     
@@ -36,7 +40,9 @@ regARMA <- function  ( data,  ar = 0,  ma = 0,  method = c  ( "alasso" ) ,  msel
       if ( auto.order == TRUE ) { stop ( 'Auto order is not active when there are replications! please set auto.order to FALSE.' ) } 
       result = iregarma ( rawdata  =  data,  ar  =  ar,  ma  =  ma,  
                           method  =  method,  normalize  =  normalize,  mselection  =  mselection,  
-                          alpha  =  alpha,  df1  =  Ndf,  df2  =  Sdf,  ses.l=ses.l, pacfs  =  FALSE,  BLACKLIST.ID  =  BLACKLIST.ID,  debug = debug ) 
+                          alpha  =  alpha,  df1  =  Ndf,  df2  =  Sdf,  ses.l=ses.l, pacfs  =  FALSE,
+                          BLACKLIST.ID  =  BLACKLIST.ID,  debug = debug , auto.prune = auto.prune ,
+                          zero.find.force = zero.find.force , rep = iteration) 
       return ( result )  
     } else if ( with.rep == 0 ) { 
       cat('\n penalized REGARMA(',ar,',',ma,')\n' )
